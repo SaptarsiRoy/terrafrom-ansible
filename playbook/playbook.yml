@@ -1,0 +1,66 @@
+---
+- name: Setup httpd server in the ec2-instance
+  hosts: tag_env_webserver
+  vars_files:
+    - vars.yml
+  vars:
+    - document_root: /web
+      
+  pre_tasks:
+    - name: Format /dev/sdh
+      filesystem:
+        dev: /dev/sdh
+        fstype: ext4
+
+    - name: Mount drive
+      mount: 
+        src: /dev/sdh
+        fstype: ext4
+        path: /var/www/html
+        state: mounted
+
+  tasks:
+  - name: Install httpd Software 
+    yum: 
+      name: httpd
+      state: present
+  
+  - name: Start httpd services
+    service: 
+      name: httpd
+      state: started
+      enabled: yes
+  
+  - name: Create document root
+    file:
+      path: "{{ document_root }}"
+      state: directory
+      mode: 2775
+      owner: apache
+      group: apache
+      setype: http_sys_content_t
+  
+  - name: Copy webpage
+    template:
+      src: web.html
+      dest: "{{ document_root }}/index.html"
+      mode: 0644
+      owner: apache
+      group: apache
+      setype: httpd_sys_content_t
+
+  - name: Copy configuration file
+    template: 
+      src: myconf.conf.j2
+      dest: /etc/httpd/conf.d/myconf.conf
+      owner: root
+      group: root
+      mode: 0640
+    notify: Restart httpd
+  
+  handlers:
+  - name: Restart httpd
+    service:
+      name: httpd
+      state: restarted
+      enabled: yes

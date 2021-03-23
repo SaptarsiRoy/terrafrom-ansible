@@ -1,0 +1,8 @@
+<VirtualHost {{ ansible_facts.default_ipv4.address }}:80>
+documentroot {{ document_root }}
+<Directory {{ document_root }}>
+    Order allow,deny
+    Allow from all
+    Require all granted
+</Directory>
+</VirtualHost>
