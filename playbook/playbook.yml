@@ -38,7 +38,7 @@
       mode: 2775
       owner: apache
       group: apache
-      setype: http_sys_content_t
+      setype: httpd_sys_content_t
   
   - name: Copy webpage
     template:
